@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 08:36:13 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/22 11:10:32 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/24 16:42:46 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,30 @@ long long int	ft_atoll(char *str)
 	}
 	while (str[i] != '\0' && str[i] >= '0' && str[i] <= '9')
 		res = res * 10 + (str[i++] - '0');
+	return (res * sign);
+}
+int	ft_atoi(const char *nptr)
+{
+	int	i;
+	int	res;
+	int	sign;
+
+	i = 0;
+	res = 0;
+	sign = 1;
+	while (nptr[i] == ' ' || (nptr[i] >= 9 && nptr[i] <= 13))
+		i++;
+	if (nptr[i] == '-' || nptr[i] == '+')
+	{
+		if (nptr[i] == '-')
+			sign = -1;
+		i++;
+	}
+	while (nptr[i] >= '0' && nptr[i] <= '9')
+	{
+		res = res * 10 + (nptr[i] - '0');
+		i++;
+	}
 	return (res * sign);
 }
 
