@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:21:35 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/24 18:50:58 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/24 22:20:31 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,13 @@ to synchronize access to it to avoid issues related to concurrent access.*/
 //in the t_philosopher.t_data structure, the time for each activity needs to 
 //be decremented for each of the philosophers
 
+typedef struct s_forks
+{
+	// int				id;
+	int				status;
+	pthread_mutex_t	fork;
+}	t_fork;
+
 typedef struct	s_data
 {
 	int				max_philos;
@@ -45,6 +52,7 @@ typedef struct	s_data
 	int				die_timer;
 	int				max_meals;
 	int				stop_dinner;
+	t_fork			*forks;
 	pthread_mutex_t	garçon;
 	pthread_mutex_t	printer;
 }	t_data;
@@ -55,10 +63,10 @@ typedef struct s_philosophers
 	int				start_time;
 	int				last_meal;
 	int				meals_ate;
-	int				fork_busy;
-	int				left_fork;
+	int				rfork;
+	int				lfork;
 	pthread_t		philo_th;
-	pthread_mutex_t	fork;
+	// t_fork			*forks;
 }	t_philosophers;
 
 

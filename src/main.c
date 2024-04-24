@@ -6,17 +6,15 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:19:10 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/24 19:33:52 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/24 22:35:36 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philosophers.h"
 
-
-
 int	kill_philo(t_philosophers *philo)
 {
-	pthread_mutex_lock(&controler()->garçon);
+	// pthread_mutex_lock(&controler()->garçon);
 	if (!controler()->stop_dinner)
 	{
 		controler()->stop_dinner = 1;
@@ -28,46 +26,49 @@ int	kill_philo(t_philosophers *philo)
 
 int	cancel_dinner(t_philosophers *philo)
 {
-	// int	i;
+	int	i;
 
-	// i = 0;
+	i = 0;
 	pthread_mutex_lock(&controler()->garçon);
 	if (controler()->stop_dinner || philo->meals_ate == controler()->max_meals)
 	{
 		pthread_mutex_unlock(&controler()->garçon);
 		return (1);
 	}
-	if ((current_time() - philo->last_meal >= controler()->die_timer)
-		|| (philo->meals_ate <= 0
-		&& (current_time() - philo->start_time >= controler()->die_timer)))
+	if ((philo->meals_ate <= 0
+		&& (current_time() - philo->start_time >= controler()->die_timer)) || (current_time() - philo->last_meal >= controler()->die_timer))
 	{
-		pthread_mutex_unlock(&controler()->garçon);
+		// pthread_mutex_unlock(&controler()->garçon);
 		return (kill_philo(philo));
 	}
+	while (i < controler()->max_philos)
 	pthread_mutex_unlock(&controler()->garçon);
 	return (0);
 }
 
 int	forks_available(t_philosophers *philo)
 {
-	if (!philo->fork_busy)
+	if (!controler()->forks[philo->rfork].status)
 	{
-		pthread_mutex_lock(&philo->fork);
-		philo->fork_busy = 1;
 		print_logs("%s%d %d has taken the right fork\n", YELLOW, philo, current_time());
+		pthread_mutex_lock(&controler()->forks[philo->rfork].fork);
+		controler()->forks[philo->rfork].status = 1;
+		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
 	}
 	else
 		return (0);
-	if (!philo[philo->left_fork].fork_busy)
+	if (!controler()->forks[philo->lfork].status)
 	{
-		pthread_mutex_lock(&philo[philo->left_fork].fork);
-		philo[philo->left_fork].fork_busy = 1;
 		print_logs("%s%d %d has taken the left fork\n", YELLOW, philo, current_time());
+		pthread_mutex_lock(&controler()->forks[philo->lfork].fork);
+		controler()->forks[philo->lfork].status = 1;
+		pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
 	}
 	else
 	{
-		pthread_mutex_unlock(&philo->fork);
-		philo->fork_busy = 0;
+		pthread_mutex_lock(&controler()->forks[philo->rfork].fork);
+		controler()->forks[philo->rfork].status = 0;
+		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
 		return (0);
 	}
 	return (1);
@@ -83,18 +84,22 @@ int	philo_eat(t_philosophers *philo)
 	{
 		if (cancel_dinner(philo))
 		{
-			pthread_mutex_unlock(&philo[philo->left_fork].fork);
-			philo[philo->left_fork].fork_busy = 0;
-			pthread_mutex_unlock(&philo->fork);
-			philo->fork_busy = 0;
+			pthread_mutex_lock(&controler()->forks[philo->lfork].fork);
+			controler()->forks[philo->lfork].status = 0;
+			pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
+			pthread_mutex_lock(&controler()->forks[philo->rfork].fork);
+			controler()->forks[philo->rfork].status = 0;
+			pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
 			return (0);
 		}
-		usleep(100);
+		// usleep(300);
 	}
-	pthread_mutex_unlock(&philo[philo->left_fork].fork);
-	philo[philo->left_fork].fork_busy = 0;
-	pthread_mutex_unlock(&philo->fork);
-	philo->fork_busy = 0;
+	pthread_mutex_lock(&controler()->forks[philo->lfork].fork);
+	controler()->forks[philo->lfork].status = 0;
+	pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
+	pthread_mutex_lock(&controler()->forks[philo->rfork].fork);
+	controler()->forks[philo->rfork].status = 0;
+	pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
 	philo->last_meal = current_time();
 	philo->meals_ate++;
 	return (1);
@@ -110,7 +115,7 @@ int	philo_think(t_philosophers *philo)
 	{
 		if (cancel_dinner(philo))
 			return (0);
-		usleep(100);
+		// usleep(100);
 	}
 	return (1);
 }
@@ -125,7 +130,7 @@ int	philo_sleep(t_philosophers *philo)
 	{
 		if (cancel_dinner(philo))
 			return (0);
-		usleep(100);
+		// usleep(100);
 	}
 	return (1);	
 }
@@ -146,6 +151,8 @@ void	*routine(void *arg)
 			if (!philo_sleep(philo))
 				return (NULL);
 		}
+		if (cancel_dinner(philo))
+			return (NULL);
 		if (philo_think(philo))
 			return (NULL);
 	}
@@ -175,17 +182,16 @@ int	create_threads(t_philosophers *philos)
 	return (0);
 }
 
-void	destroy_mutexes(t_philosophers *philos)
+void	destroy_mutexes(void)
 {
 	int	i;
 
 	i = 0;
-	printf("here at end\n");
 	pthread_mutex_destroy(&controler()->printer);
 	pthread_mutex_destroy(&controler()->garçon);
 	while (i < controler()->max_philos)
 	{
-		pthread_mutex_destroy(&philos[i].fork);
+		pthread_mutex_destroy(&controler()->forks[i].fork);
 		i++;
 	}
 }
@@ -211,11 +217,31 @@ void	init_controler(char **argv)
 	pthread_mutex_init(&controler()->printer, NULL);
 }
 
-int	init_philos(t_philosophers *philo, char **argv)
+// instead of starting with even numbers i can use the init forks to
+// lock the odd forks
+
+void	init_forks(t_fork *fork)
 {
 	int	i;
 
+	i = 0;
+	while (i < controler()->max_philos)
+	{
+		// fork[i].id = i + 1;
+		fork[i].status = 0;
+		pthread_mutex_init(&fork[i].fork, NULL);
+		i++;
+	}
+}
+
+int	init_philos(t_philosophers *philo, char **argv)
+{
+	int	i;
+	t_fork	fork[MAX];
+
 	init_controler(argv);
+	init_forks(fork);
+	controler()->forks = fork;
 	i = 0;
 	while (i < controler()->max_philos)
 	{
@@ -223,12 +249,11 @@ int	init_philos(t_philosophers *philo, char **argv)
 		philo[i].start_time = current_time();
 		philo[i].last_meal = current_time();
 		philo[i].meals_ate = 0;
-		philo[i].fork_busy = 0;
+		philo[i].rfork = i;
 		if (philo[i].id == controler()->max_philos)
-			philo[i].left_fork = 0;
+			philo[i].lfork = 0;
 		else
-			philo[i].left_fork = i + 2;
-		pthread_mutex_init(&philo[i].fork, NULL);
+			philo[i].lfork = i + 1;
 		i++;
 	}	
 	return (0);
@@ -243,6 +268,6 @@ int	main(int argc, char **argv)
 	init_philos(philos, argv);
 	if (create_threads(philos) != 0)
 		return (1);
-	destroy_mutexes(philos);
+	destroy_mutexes();
 	return (0);
 }
