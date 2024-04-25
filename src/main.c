@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:19:10 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/25 01:37:09 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/25 11:51:08 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,10 @@
 
 int	kill_philo(t_philosophers *philo)
 {
-	// pthread_mutex_lock(&controler()->garçon);
 	if (!controler()->stop_dinner)
 	{
-		print_logs("%s%d %d died\n", RED, philo, current_time());
 		controler()->stop_dinner = 1;
+		print_logs("%s%d %d died\n", RED, philo, current_time());
 	}
 	pthread_mutex_unlock(&controler()->garçon);
 	return (1);	
@@ -28,14 +27,15 @@ int	cancel_dinner(t_philosophers *philo)
 {
 	pthread_mutex_lock(&controler()->garçon);
 	usleep(1);
-	if ((philo->meals_ate <= 0
-		&& (current_time() - philo->start_time >= controler()->die_timer)) || (philo->meals_ate <= 0 && (current_time() - philo->last_meal >= controler()->die_timer)))
-		return (kill_philo(philo));
 	if (controler()->stop_dinner || philo->meals_ate == controler()->max_meals)
 	{
+		// printf("exit here: %d, %d, %d\n",controler()->stop_dinner, philo->meals_ate, controler()->max_meals);
 		pthread_mutex_unlock(&controler()->garçon);
 		return (1);
 	}
+	if ((philo->meals_ate <= 0
+		&& ((current_time() - philo->start_time >= controler()->die_timer))) || (current_time() - philo->last_meal >= controler()->die_timer))
+		return (kill_philo(philo));
 	pthread_mutex_unlock(&controler()->garçon);
 	return (0);
 }
@@ -44,8 +44,8 @@ int	forks_available(t_philosophers *philo)
 {
 	if (!cancel_dinner(philo) && !controler()->forks[philo->rfork].status)
 	{
-		print_logs("%s%d %d has taken the right fork\n", YELLOW, philo, current_time());
 		pthread_mutex_lock(&controler()->forks[philo->rfork].fork);
+		print_logs("%s%d %d has taken the right fork\n", YELLOW, philo, current_time());
 		controler()->forks[philo->rfork].status = 1;
 		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
 	}
@@ -77,15 +77,7 @@ int	philo_eat(t_philosophers *philo)
 	while (!controler()->stop_dinner && current_time() < time + controler()->eat_timer)
 	{
 		if (cancel_dinner(philo))
-		{
-			pthread_mutex_lock(&controler()->forks[philo->lfork].fork);
-			controler()->forks[philo->lfork].status = 0;
-			pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
-			pthread_mutex_lock(&controler()->forks[philo->rfork].fork);
-			controler()->forks[philo->rfork].status = 0;
-			pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
 			return (0);
-		}
 	}
 	pthread_mutex_lock(&controler()->forks[philo->lfork].fork);
 	controler()->forks[philo->lfork].status = 0;
@@ -133,7 +125,7 @@ void	*routine(void *arg)
 	philo = (t_philosophers *)arg;
 	if (philo->id % 2 != 0)
 		usleep(100);
-	while (!controler()->stop_dinner && !cancel_dinner(philo))
+	while (!cancel_dinner(philo))
 	{
 		if (forks_available(philo))
 		{
@@ -142,7 +134,7 @@ void	*routine(void *arg)
 			if (!philo_sleep(philo))
 				return (NULL);
 		}
-		if (controler()->stop_dinner || cancel_dinner(philo))
+		if (cancel_dinner(philo))
 			return (NULL);
 		if (philo_think(philo))
 			return (NULL);
@@ -162,8 +154,6 @@ int	create_threads(t_philosophers *philos)
 		i++;
 	}
 	i = 0;
-	// if (controler()->stop_dinner || cancel_dinner(philos))
-	// 	return (1);
 	while (i < controler()->max_philos)
 	{
 		if (pthread_join(philos[i].philo_th, NULL) != 0)
@@ -173,7 +163,7 @@ int	create_threads(t_philosophers *philos)
 	return (0);
 }
 
-void	destroy_mutexes(void)
+void	destroy_mutexes(t_philosophers *philos)
 {
 	int	i;
 
@@ -185,6 +175,8 @@ void	destroy_mutexes(void)
 		pthread_mutex_destroy(&controler()->forks[i].fork);
 		i++;
 	}
+	free(controler()->forks);
+	free(philos);
 }
 t_data	*controler()
 {
@@ -218,7 +210,6 @@ void	init_forks(t_fork *fork)
 	i = 0;
 	while (i < controler()->max_philos)
 	{
-		// fork[i].id = i + 1;
 		fork[i].status = 0;
 		pthread_mutex_init(&fork[i].fork, NULL);
 		i++;
@@ -228,9 +219,12 @@ void	init_forks(t_fork *fork)
 int	init_philos(t_philosophers *philo, char **argv)
 {
 	int	i;
-	t_fork	fork[MAX];
+	t_fork		*fork;
 
 	init_controler(argv);
+	fork = malloc(controler()->max_philos * sizeof(t_fork));
+	if (!fork)
+		return (1);
 	init_forks(fork);
 	controler()->forks = fork;
 	i = 0;
@@ -252,13 +246,16 @@ int	init_philos(t_philosophers *philo, char **argv)
 
 int	main(int argc, char **argv)
 {
-	t_philosophers	philos[MAX];
+	t_philosophers *philos;
 
 	if (parsing(argc, argv) != 0)
+		return (1);
+	philos = malloc(ft_atoi(argv[1]) * sizeof(t_philosophers));
+	if (!philos)
 		return (1);
 	init_philos(philos, argv);
 	if (create_threads(philos) != 0)
 		return (1);
-	destroy_mutexes();
+	destroy_mutexes(philos);
 	return (0);
 }
