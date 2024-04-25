@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:21:35 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/24 22:20:31 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/25 18:08:19 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ typedef struct	s_data
 	int				max_meals;
 	int				stop_dinner;
 	t_fork			*forks;
+	pthread_mutex_t	death;
 	pthread_mutex_t	garçon;
 	pthread_mutex_t	printer;
 }	t_data;
