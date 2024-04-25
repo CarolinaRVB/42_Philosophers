@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:19:10 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/24 22:35:36 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/25 01:37:09 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,8 @@ int	kill_philo(t_philosophers *philo)
 	// pthread_mutex_lock(&controler()->garçon);
 	if (!controler()->stop_dinner)
 	{
+		print_logs("%s%d %d died\n", RED, philo, current_time());
 		controler()->stop_dinner = 1;
-		print_logs("%s%d %d died\n", RED, philo, current_time());;	
 	}
 	pthread_mutex_unlock(&controler()->garçon);
 	return (1);	
@@ -26,29 +26,23 @@ int	kill_philo(t_philosophers *philo)
 
 int	cancel_dinner(t_philosophers *philo)
 {
-	int	i;
-
-	i = 0;
 	pthread_mutex_lock(&controler()->garçon);
+	usleep(1);
+	if ((philo->meals_ate <= 0
+		&& (current_time() - philo->start_time >= controler()->die_timer)) || (philo->meals_ate <= 0 && (current_time() - philo->last_meal >= controler()->die_timer)))
+		return (kill_philo(philo));
 	if (controler()->stop_dinner || philo->meals_ate == controler()->max_meals)
 	{
 		pthread_mutex_unlock(&controler()->garçon);
 		return (1);
 	}
-	if ((philo->meals_ate <= 0
-		&& (current_time() - philo->start_time >= controler()->die_timer)) || (current_time() - philo->last_meal >= controler()->die_timer))
-	{
-		// pthread_mutex_unlock(&controler()->garçon);
-		return (kill_philo(philo));
-	}
-	while (i < controler()->max_philos)
 	pthread_mutex_unlock(&controler()->garçon);
 	return (0);
 }
 
 int	forks_available(t_philosophers *philo)
 {
-	if (!controler()->forks[philo->rfork].status)
+	if (!cancel_dinner(philo) && !controler()->forks[philo->rfork].status)
 	{
 		print_logs("%s%d %d has taken the right fork\n", YELLOW, philo, current_time());
 		pthread_mutex_lock(&controler()->forks[philo->rfork].fork);
@@ -57,7 +51,7 @@ int	forks_available(t_philosophers *philo)
 	}
 	else
 		return (0);
-	if (!controler()->forks[philo->lfork].status)
+	if (!cancel_dinner(philo) && !controler()->forks[philo->lfork].status)
 	{
 		print_logs("%s%d %d has taken the left fork\n", YELLOW, philo, current_time());
 		pthread_mutex_lock(&controler()->forks[philo->lfork].fork);
@@ -78,9 +72,9 @@ int	philo_eat(t_philosophers *philo)
 {
 	int	time;
 
-	time = current_time();
 	print_logs("%s%d %d is eating\n", GREEN, philo, current_time());
-	while (current_time() < time + controler()->eat_timer)
+	time = current_time();
+	while (!controler()->stop_dinner && current_time() < time + controler()->eat_timer)
 	{
 		if (cancel_dinner(philo))
 		{
@@ -92,7 +86,6 @@ int	philo_eat(t_philosophers *philo)
 			pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
 			return (0);
 		}
-		// usleep(300);
 	}
 	pthread_mutex_lock(&controler()->forks[philo->lfork].fork);
 	controler()->forks[philo->lfork].status = 0;
@@ -109,13 +102,12 @@ int	philo_think(t_philosophers *philo)
 {
 	int	time;
 
-	time = current_time();	
 	print_logs("%s%lld %d is thinking\n", GREY, philo, current_time());
+	time = current_time();	
 	while (current_time() < time + controler()->sleep_timer)
 	{
 		if (cancel_dinner(philo))
 			return (0);
-		// usleep(100);
 	}
 	return (1);
 }
@@ -124,13 +116,12 @@ int	philo_sleep(t_philosophers *philo)
 {
 	int	time;
 
-	time = current_time();
 	print_logs("%s%d %d is sleeping\n", CYAN, philo, current_time());
-	while (current_time() < time + controler()->sleep_timer)
+	time = current_time();
+	while (!controler()->stop_dinner && current_time() < time + controler()->sleep_timer)
 	{
 		if (cancel_dinner(philo))
 			return (0);
-		// usleep(100);
 	}
 	return (1);	
 }
@@ -142,7 +133,7 @@ void	*routine(void *arg)
 	philo = (t_philosophers *)arg;
 	if (philo->id % 2 != 0)
 		usleep(100);
-	while (!cancel_dinner(philo))
+	while (!controler()->stop_dinner && !cancel_dinner(philo))
 	{
 		if (forks_available(philo))
 		{
@@ -151,7 +142,7 @@ void	*routine(void *arg)
 			if (!philo_sleep(philo))
 				return (NULL);
 		}
-		if (cancel_dinner(philo))
+		if (controler()->stop_dinner || cancel_dinner(philo))
 			return (NULL);
 		if (philo_think(philo))
 			return (NULL);

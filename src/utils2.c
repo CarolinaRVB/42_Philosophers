@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/20 10:51:27 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/24 18:39:03 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/25 01:28:46 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,8 @@ int	current_time()
 
 void	print_logs(char *str, char *color, t_philosophers *philo, int time)
 {
-	(void)time;
+	// (void)time;
 	pthread_mutex_lock(&controler()->printer);
-	printf(str, color, current_time() - philo->start_time, philo->id);
+	printf(str, color, time - philo->start_time, philo->id);
 	pthread_mutex_unlock(&controler()->printer);
 }
