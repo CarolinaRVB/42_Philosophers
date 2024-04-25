@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:21:35 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/25 18:08:19 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/25 22:59:13 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,6 @@ to synchronize access to it to avoid issues related to concurrent access.*/
 
 typedef struct s_forks
 {
-	// int				id;
-	int				status;
 	pthread_mutex_t	fork;
 }	t_fork;
 
@@ -53,7 +51,6 @@ typedef struct	s_data
 	int				max_meals;
 	int				stop_dinner;
 	t_fork			*forks;
-	pthread_mutex_t	death;
 	pthread_mutex_t	garçon;
 	pthread_mutex_t	printer;
 }	t_data;
@@ -67,7 +64,6 @@ typedef struct s_philosophers
 	int				rfork;
 	int				lfork;
 	pthread_t		philo_th;
-	// t_fork			*forks;
 }	t_philosophers;
 
 
