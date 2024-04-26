@@ -6,18 +6,37 @@
 /*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/20 10:51:27 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/26 17:06:23 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/26 19:37:23 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philosophers.h"
 
-t_data	*controler()
+int	clean_memory(t_philosophers *philos)
+{
+	if (philos)
+		free(philos);
+	if (controler()->forks)
+		free(controler()->forks);
+	return (1);
+}
+
+t_data	*controler(void)
 {
 	static t_data	controler;
-	
+
 	return (&controler);
 }
+
+int	current_time(void)
+{
+	struct timeval	tv;
+
+	if (gettimeofday(&tv, NULL))
+		return (0);
+	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+}
+
 int	parsing(int argc, char **argv)
 {
 	int	i;
@@ -28,27 +47,19 @@ int	parsing(int argc, char **argv)
 	while (argc)
 	{
 		if (!ft_isdigit_str(argv[i]))
-			return (error_msg("Error: invalid arg %d\n", ft_atoll(argv[i])));
+			return (printf("Error: invalid argument %s\n", argv[i]));
 		argc--;
 		i++;
 	}
-	if (ft_atoll(argv[1]) > 200 || argv[1][0] == '0' || argv[2][0] == '0'
-		|| argv[3][0] == '0' || argv[4][0] == '0')
-		return (error_msg("Error: invalid arg number\n", -1));
+	if (ft_atoi(argv[1]) > 200 || argv[1][0] == '0' || argv[2][0] == '0'
+		|| argv[3][0] == '0' || argv[4][0] == '0'
+		|| (argv[5] && argv[5][0] == '0'))
+		return (printf("Error: invalid argument\n"));
 	return (0);
 }
 
-int	current_time()
+int	print_logs(char *str, char *color, t_philosophers *philo)
 {
-	struct timeval tv;
-	if (gettimeofday(&tv, NULL))
-		return (0);
-	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
-}
-
-int	print_logs(char *str, char *color, t_philosophers *philo, int time)
-{
-	(void)time;
 	pthread_mutex_lock(&controler()->printer);
 	if (stop_dinner())
 	{

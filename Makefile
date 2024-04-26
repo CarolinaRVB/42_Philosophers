@@ -1,6 +1,7 @@
 NAME := philo
 
 SRC :=	src/actions.c \
+		src/init_dinner.c \
 		src/utils1.c \
 		src/utils2.c \
 		src/main.c
