@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:19:10 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/25 23:15:39 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/26 09:06:04 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,8 +103,19 @@ int	cancel_dinner(t_philosophers *philo)
 int	philo_eat(t_philosophers *philo)
 {
 	int	time;
-
+	if (cancel_dinner(philo))
+	{
+		// pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
+		// pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
+		return (0);
+	}
 	pthread_mutex_lock(&controler()->forks[philo->rfork].fork);
+		if (cancel_dinner(philo))
+	{
+		// pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
+		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
+		return (0);
+	}
 	pthread_mutex_lock(&controler()->forks[philo->lfork].fork);
 	if (cancel_dinner(philo))
 	{

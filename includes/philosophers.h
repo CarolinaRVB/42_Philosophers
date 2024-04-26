@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:21:35 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/25 22:59:13 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/26 09:36:52 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ typedef struct s_philosophers
 }	t_philosophers;
 
 
-
+int	stop_dinner();
 /*src/main.c*/
 // void			*philo_routine(void *arg);
 // int				create_philosophers(t_philosopher *philo);
