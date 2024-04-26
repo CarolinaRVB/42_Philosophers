@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philosophers.h                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:21:35 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/26 09:36:52 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/26 17:07:43 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,24 +77,21 @@ int				main(int argc, char **argv);
 
 /*src/actions.c*/
 // void			philo_grab_forks(t_philosopher *philo);
-// void			philo_eat(t_philosopher *philo);
-// void			philo_sleep(t_philosopher *philo);
-// void			*philo_death(t_philosopher *philo, long long time);
+int				philo_eat(t_philosophers *philo);
+int				philo_sleep(t_philosophers *philo);
+int				kill_philo(t_philosophers *philo);
+int				stop_dinner();
 
 /*src/utils1.c*/
 int				error_msg(char *msg, int n);
-long long int	ft_atoll(char *str);
 void			*ft_calloc(size_t nmemb, size_t size);
 int				ft_isdigit_str(char *arg);
-int	ft_atoi(const char *nptr);
+int				ft_atoi(const char *nptr);
 
 /*src/utils2.c*/
+t_data			*controler();
 int				parsing(int argc, char **argv);
-// t_dead			*dead_check(void);
-// int				dead_philos(t_philosopher *philo);
-int		current_time();
-void			print_logs(char *str, char *color, t_philosophers *philo, int time);
+int				current_time();
+int				print_logs(char *str, char *color, t_philosophers *philo, int time);
 
-
-t_data	*controler();
 #endif

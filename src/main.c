@@ -3,168 +3,29 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:19:10 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/26 09:06:04 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/26 17:06:09 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philosophers.h"
 
-int	kill_philo(t_philosophers *philo)
-{
-	if (!controler()->stop_dinner)
-	{
-		controler()->stop_dinner = 1;
-		print_logs("%s%d %d died\n", RED, philo, current_time());
-	}
-	pthread_mutex_unlock(&controler()->garçon);
-	return (1);	
-}
-
-int	stop_dinner()
-{
-	pthread_mutex_lock(&controler()->garçon);
-	if (controler()->stop_dinner)
-	{
-		pthread_mutex_unlock(&controler()->garçon);
-		return (1);
-	}
-	pthread_mutex_unlock(&controler()->garçon);
-	return (0);
-}
-
 int	cancel_dinner(t_philosophers *philo)
 {
 	pthread_mutex_lock(&controler()->garçon);
-	usleep(1);
-	if ((philo->meals_ate <= 0
-		&& ((current_time() - philo->start_time >= controler()->die_timer))) || (current_time() - philo->last_meal >= controler()->die_timer))
+	if ((current_time() - philo->last_meal >= controler()->die_timer) || (philo->meals_ate <= 0
+		&& ((current_time() - philo->start_time >= controler()->die_timer))))
 		return (kill_philo(philo));
 	if (philo->meals_ate == controler()->max_meals)
 	{
+		controler()->stop_dinner = 1;
 		pthread_mutex_unlock(&controler()->garçon);
 		return (1);
 	}
 	pthread_mutex_unlock(&controler()->garçon);
 	return (0);
-}
-
-// int	busy_fork(int fork_id)
-// {
-// 	pthread_mutex_lock(&controler()->garçon);
-// 	if (!controler()->forks[fork_id].status)
-// 	{
-// 		pthread_mutex_unlock(&controler()->garçon);
-// 		return (0);
-// 	}
-// 	pthread_mutex_unlock(&controler()->garçon);
-// 	return (1);
-// }
-
-// void	update_fork_status(int fork_id, int status)
-// {
-// 	pthread_mutex_lock(&controler()->garçon);
-// 	controler()->forks[fork_id].status = status;
-// 	pthread_mutex_unlock(&controler()->garçon);
-// }
-
-
-// int	forks_available(t_philosophers *philo)
-// {
-	
-// 	if (!cancel_dinner(philo) && !busy_fork(philo->rfork))
-// 	{
-// 		update_fork_status(philo->rfork, 1);
-// 		pthread_mutex_lock(&controler()->forks[philo->rfork].fork);
-// 		print_logs("%s%d %d has taken the right fork\n", YELLOW, philo, current_time());
-// 		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
-// 	}
-// 	else
-// 		return (0);
-// 	if (!cancel_dinner(philo) && !busy_fork(philo->lfork))
-// 	{
-// 		print_logs("%s%d %d has taken the left fork\n", YELLOW, philo, current_time());
-// 		pthread_mutex_lock(&controler()->forks[philo->lfork].fork);
-// 		update_fork_status(philo->lfork, 1);
-// 		pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
-// 	}
-// 	else
-// 	{
-// 		pthread_mutex_lock(&controler()->forks[philo->rfork].fork);
-// 		update_fork_status(philo->rfork, 0);
-// 		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
-// 		return (0);
-// 	}
-// 	return (1);
-// }
-
-int	philo_eat(t_philosophers *philo)
-{
-	int	time;
-	if (cancel_dinner(philo))
-	{
-		// pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
-		// pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
-		return (0);
-	}
-	pthread_mutex_lock(&controler()->forks[philo->rfork].fork);
-		if (cancel_dinner(philo))
-	{
-		// pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
-		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
-		return (0);
-	}
-	pthread_mutex_lock(&controler()->forks[philo->lfork].fork);
-	if (cancel_dinner(philo))
-	{
-		pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
-		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
-		return (0);
-	}
-	print_logs("%s%d %d is eating\n", GREEN, philo, current_time());
-	time = current_time();
-	philo->last_meal = current_time();
-	philo->meals_ate++;
-	while (current_time() < time + controler()->eat_timer)
-	{
-		if (stop_dinner())
-		{
-			pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
-			pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
-			return (0);
-		}
-		usleep(100);
-	}
-	pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
-	pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
-	return (1);
-}
-
-void	philo_think(t_philosophers *philo)
-{
-	if (stop_dinner())
-		return ;
-	print_logs("%s%lld %d is thinking\n", GREY, philo, current_time());
-	usleep(1000);
-}
-
-int	philo_sleep(t_philosophers *philo)
-{
-	int	time;
-
-	if (stop_dinner())
-		return (0);
-	print_logs("%s%d %d is sleeping\n", CYAN, philo, current_time());
-	time = current_time();
-	while (current_time() < time + controler()->sleep_timer)
-	{
-		if (stop_dinner())
-			return (0);
-		usleep(100);
-	}
-	return (1);	
 }
 
 void	*routine(void *arg)
@@ -174,19 +35,16 @@ void	*routine(void *arg)
 	philo = (t_philosophers *)arg;
 	if (philo->id % 2 != 0)
 		usleep(1000);
-	while (!stop_dinner())
+	while (!cancel_dinner(philo) && !stop_dinner())
 	{	
 		if (cancel_dinner(philo))
-			return (NULL);
+			break ;
 		if (!philo_eat(philo))
-			return (NULL);
-		if (stop_dinner())
-			return (NULL);
+			break ;
 		if (!philo_sleep(philo))
-			return (NULL);
-		if (stop_dinner())
-			return (NULL);
-		philo_think(philo);
+			break ;
+		print_logs("%s%lld %d is thinking\n", GREY, philo, current_time());
+		usleep(1000);
 	}
 	return (NULL);
 }
@@ -226,12 +84,6 @@ void	destroy_mutexes(t_philosophers *philos)
 	}
 	free(controler()->forks);
 	free(philos);
-}
-t_data	*controler()
-{
-	static t_data	controler;
-	
-	return (&controler);
 }
 
 void	init_controler(char **argv)
