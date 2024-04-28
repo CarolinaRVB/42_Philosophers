@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philosophers.h                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:21:35 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/26 19:37:39 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/28 16:37:20 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ typedef struct s_data
 	int				sleep_timer;
 	int				die_timer;
 	int				max_meals;
+	int				all_philos_ate;
 	int				stop_dinner;
 	t_fork			*forks;
 	pthread_mutex_t	waiter;
@@ -70,7 +71,7 @@ void			destroy_mutexes(t_philosophers *philos);
 int				main(int argc, char **argv);
 
 /*src/actions.c*/
-int				died_while_eating(t_philosophers *philo);
+int				grab_forks(t_philosophers *philo);
 int				philo_eat(t_philosophers *philo);
 int				philo_sleep(t_philosophers *philo);
 int				kill_philo(t_philosophers *philo);
@@ -82,16 +83,16 @@ void			init_forks(t_fork *fork);
 int				init_philos(t_philosophers *philo, char **argv);
 
 /*src/utils1.c*/
-int				error_msg(char *msg, int n);
 int				ft_atoi(const char *nptr);
 void			*ft_calloc(size_t nmemb, size_t size);
 int				ft_isdigit_str(char *arg);
-
-/*src/utils2.c*/
-int				clean_memory(t_philosophers *philos);
 t_data			*controler(void);
 int				current_time(void);
+
+/*src/utils2.c*/
 int				parsing(int argc, char **argv);
 int				print_logs(char *str, char *color, t_philosophers *philo);
+int				died_while_eating(t_philosophers *philo);
+int				clean_memory(t_philosophers *philos);
 
 #endif

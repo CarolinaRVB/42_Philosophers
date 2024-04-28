@@ -3,53 +3,55 @@
 /*                                                        :::      ::::::::   */
 /*   actions.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/20 10:54:42 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/26 20:20:09 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/28 16:37:40 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philosophers.h"
 
-int	died_while_eating(t_philosophers *philo)
-{
-	int	time;
-
-	time = current_time();
-	while (current_time() < time + controler()->eat_timer)
-	{
-		if (cancel_dinner(philo))
-		{
-			pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
-			pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
-			return (1);
-		}
-		usleep(100);
-	}
-	return (0);
-}
-
-int	philo_eat(t_philosophers *philo)
+int	grab_forks(t_philosophers *philo)
 {
 	pthread_mutex_lock(&controler()->forks[philo->rfork].fork);
+	if (!print_logs("%s%d %d has taken a fork\n", YELLOW, philo))
+	{
+		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
+		return (0);
+	}	
 	pthread_mutex_lock(&controler()->forks[philo->lfork].fork);
+	if (!print_logs("%s%d %d has taken a fork\n", YELLOW, philo))
+	{
+		pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
+		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
+		return (0);
+	}	
 	if (cancel_dinner(philo))
 	{
 		pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
 		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
 		return (0);
 	}
+	return (1);
+}
+
+int	philo_eat(t_philosophers *philo)
+{
+	if (!grab_forks(philo))
+		return (0);
 	if (!print_logs("%s%d %d is eating\n", GREEN, philo))
 	{
 		pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
 		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
 		return (0);
 	}
+	philo->last_meal = current_time();
 	if (died_while_eating(philo))
 		return (0);
-	philo->last_meal = current_time();
 	philo->meals_ate++;
+	if (philo->meals_ate == controler()->max_meals)
+		controler()->all_philos_ate++;
 	pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
 	pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
 	return (1);
@@ -65,8 +67,7 @@ int	philo_sleep(t_philosophers *philo)
 	while (current_time() < time + controler()->sleep_timer)
 	{
 		if (stop_dinner())
-			return (1);
-		usleep(100);
+			return (0);
 	}
 	return (1);
 }

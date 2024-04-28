@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init_dinner.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:21:35 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/26 19:13:59 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/28 16:23:17 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ int	init_controler(char **argv)
 	controler()->die_timer = ft_atoi(argv[2]);
 	controler()->eat_timer = ft_atoi(argv[3]);
 	controler()->sleep_timer = ft_atoi(argv[4]);
+	controler()->all_philos_ate = 0;
 	if (argv[5])
 		controler()->max_meals = ft_atoi(argv[5]);
 	else

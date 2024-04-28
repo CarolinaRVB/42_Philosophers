@@ -3,23 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   utils1.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 08:36:13 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/26 17:53:15 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/28 16:35:07 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philosophers.h"
-
-int	error_msg(char *msg, int n)
-{
-	if (n != -1)
-		printf(msg, n);
-	else
-		printf("%s\n", msg);
-	return (1);
-}
 
 int	ft_atoi(const char *nptr)
 {
@@ -77,4 +68,20 @@ int	ft_isdigit_str(char *arg)
 		}
 	}
 	return (1);
+}
+
+t_data	*controler(void)
+{
+	static t_data	controler;
+
+	return (&controler);
+}
+
+int	current_time(void)
+{
+	struct timeval	tv;
+
+	if (gettimeofday(&tv, NULL))
+		return (0);
+	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
 }

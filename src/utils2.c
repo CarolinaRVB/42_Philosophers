@@ -3,39 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   utils2.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/20 10:51:27 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/26 19:37:23 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/28 16:35:30 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philosophers.h"
-
-int	clean_memory(t_philosophers *philos)
-{
-	if (philos)
-		free(philos);
-	if (controler()->forks)
-		free(controler()->forks);
-	return (1);
-}
-
-t_data	*controler(void)
-{
-	static t_data	controler;
-
-	return (&controler);
-}
-
-int	current_time(void)
-{
-	struct timeval	tv;
-
-	if (gettimeofday(&tv, NULL))
-		return (0);
-	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
-}
 
 int	parsing(int argc, char **argv)
 {
@@ -51,7 +26,7 @@ int	parsing(int argc, char **argv)
 		argc--;
 		i++;
 	}
-	if (ft_atoi(argv[1]) > 200 || argv[1][0] == '0' || argv[2][0] == '0'
+	if (argv[1][0] == '0' || argv[2][0] == '0'
 		|| argv[3][0] == '0' || argv[4][0] == '0'
 		|| (argv[5] && argv[5][0] == '0'))
 		return (printf("Error: invalid argument\n"));
@@ -68,5 +43,31 @@ int	print_logs(char *str, char *color, t_philosophers *philo)
 	}
 	printf(str, color, current_time() - philo->start_time, philo->id);
 	pthread_mutex_unlock(&controler()->printer);
+	return (1);
+}
+
+int	died_while_eating(t_philosophers *philo)
+{
+	int	time;
+
+	time = current_time();
+	while (current_time() < time + controler()->eat_timer)
+	{
+		if (stop_dinner())
+		{
+			pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
+			pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
+			return (1);
+		}
+	}
+	return (0);
+}
+
+int	clean_memory(t_philosophers *philos)
+{
+	if (philos)
+		free(philos);
+	if (controler()->forks)
+		free(controler()->forks);
 	return (1);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:19:10 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/26 20:09:34 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/28 16:30:12 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,10 @@ int	cancel_dinner(t_philosophers *philo)
 	pthread_mutex_lock(&controler()->waiter);
 	if ((current_time() - philo->last_meal >= controler()->die_timer)
 		|| (philo->meals_ate <= 0 && ((current_time() - philo->start_time
-					>= controler()->die_timer))) 
+					>= controler()->die_timer)))
 		|| controler()->max_philos == 1)
 		return (kill_philo(philo));
-	if (philo->meals_ate == controler()->max_meals)
+	if (controler()->all_philos_ate == controler()->max_philos)
 	{
 		controler()->stop_dinner = 1;
 		pthread_mutex_unlock(&controler()->waiter);
@@ -36,7 +36,7 @@ void	*routine(void *arg)
 
 	philo = (t_philosophers *)arg;
 	if (philo->id % 2 != 0)
-		usleep(10000);
+		usleep(1000);
 	while (!cancel_dinner(philo) && !stop_dinner())
 	{
 		if (cancel_dinner(philo))
