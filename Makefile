@@ -1,6 +1,7 @@
 NAME := philo
 
 SRC :=	src/actions.c \
+		src/init_dinner.c \
 		src/utils1.c \
 		src/utils2.c \
 		src/main.c
@@ -9,7 +10,7 @@ OBJ := $(SRC:.c=.o)
 
 CC := cc
 
-CFLAGS := -Wall -Wextra -Werror -g
+CFLAGS := -Wall -Wextra -Werror -g #-pthread -fsanitize=thread
 
 INCLUDES := -I.libft/includes
 

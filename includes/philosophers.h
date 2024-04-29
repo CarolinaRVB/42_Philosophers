@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:21:35 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/23 18:00:42 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/29 22:46:36 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,79 +19,74 @@
 # include <pthread.h>
 # include <unistd.h>
 
-#define MAX 201
-#define RED "\x1b[31m"
-#define GREEN "\x1b[32m"
-#define YELLOW "\x1b[33m"
-#define CYAN "\x1b[36m"
-#define GREY "\x1b[90m"
+# define RED "\x1b[31m"
+# define GREEN "\x1b[32m"
+# define YELLOW "\x1b[33m"
+# define CYAN "\x1b[36m"
+# define GREY "\x1b[90m"
 
-//##############   MUTEX EXPLANATION  #######################################
-
-/*So, even though each philosopher has its own data and resources, 
-they all share the same standard output, and therefore, a mutex is used 
-to synchronize access to it to avoid issues related to concurrent access.*/
-
-//##########################################################################
-
-//in the t_philosopher.t_data structure, the time for each activity needs to 
-//be decremented for each of the philosophers
-
-typedef	struct s_dead
+typedef struct s_forks
 {
-	int				dead;
-	pthread_mutex_t	dead_lock;
-	pthread_mutex_t	dead_check;
-}	t_dead;
+	pthread_mutex_t	fork;
+}	t_fork;
 
 typedef struct s_data
 {
-	int					n_philos;
-	long long			t_eat;
-	long long			t_sleep;
-	long long			t_death;
-	long long			n_meals;
-	pthread_mutex_t			print_msg;
-}				t_data;
+	int				all_philos_ate;
+	int				max_philos;
+	int				stop_dinner;
+	int				max_meals;
+	unsigned int	eat_timer;
+	unsigned int	sleep_timer;
+	unsigned int	die_timer;
+	t_fork			*forks;
+	pthread_mutex_t	waiter;
+	pthread_mutex_t	printer;
+}	t_data;
 
-typedef struct	s_philosopher
+typedef struct s_philosophers
 {
-	pthread_t				th;
-	int						id;
-	long long				t_start;
-	long long				l_meal;
-	int						n_meals;
-	pthread_mutex_t			*left_fork;
-	pthread_mutex_t			right_fork;
-	t_data					data;
-	t_dead					*dead;
-}					t_philosopher;
-
+	int				id;
+	int				meals_ate;
+	int				rfork;
+	int				lfork;
+	unsigned int	start_time;
+	unsigned int	last_meal;
+	pthread_t		philo_th;
+}	t_philosophers;
 
 /*src/main.c*/
-void			*philo_routine(void *arg);
-int				create_philosophers(t_philosopher *philo);
-void			init_philo_struct(t_philosopher *philos, t_dead *dead, char **argv);
-void			destroy_mutexes(t_philosopher *philos);
+int				cancel_dinner(t_philosophers *philo);
+void			*dead_philo(void *arg);
+void			*routine(void *arg);
+int				create_threads(t_philosophers *philos);
 int				main(int argc, char **argv);
 
 /*src/actions.c*/
-void			philo_grab_forks(t_philosopher *philo);
-void			philo_eat(t_philosopher *philo);
-void			philo_sleep(t_philosopher *philo);
-void			*philo_death(t_philosopher *philo, long long time);
+int				grab_forks(t_philosophers *philo);
+int				philo_eat(t_philosophers *philo);
+int				philo_sleep(t_philosophers *philo);
+int				kill_philo(t_philosophers *philo);
+int				stop_dinner(void);
+
+/*src/init_dinner*/
+int				init_controler(char **argv);
+void			init_forks(t_fork *fork);
+int				init_philos(t_philosophers *philo, char **argv);
+void			destroy_mutexes(t_philosophers *philos);
 
 /*src/utils1.c*/
 int				error_msg(char *msg, int n);
-long long int	ft_atoll(char *str);
+int				ft_atoi(const char *nptr);
 void			*ft_calloc(size_t nmemb, size_t size);
 int				ft_isdigit_str(char *arg);
+unsigned int	current_time(void);
 
 /*src/utils2.c*/
 int				parsing(int argc, char **argv);
-t_dead			*dead_check(void);
-int				dead_philos(t_philosopher *philo);
-long long		current_time();
-void			print_logs(char *str, char *color, t_philosopher *philo, long long time);
+int				print_logs(char *str, char *color, t_philosophers *philo);
+int				died_while_eating(t_philosophers *philo);
+int				clean_memory(t_philosophers *philos);
+t_data			*controler(void);
 
 #endif

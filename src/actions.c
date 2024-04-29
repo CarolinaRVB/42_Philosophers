@@ -6,70 +6,97 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/20 10:54:42 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/23 18:01:24 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/29 21:58:54 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philosophers.h"
 
-void	philo_grab_forks(t_philosopher *philo)
+int	grab_forks(t_philosophers *philo)
 {
-	if (philo && dead_philos(philo))
-		return ;
-	pthread_mutex_lock(&philo->right_fork);
-	if (philo && dead_philos(philo))
+	if (pthread_mutex_lock(&controler()->forks[philo->rfork].fork) != 0)
+		return (0);
+	if (!print_logs("%s%d %d has taken a fork\n", YELLOW, philo))
 	{
-		pthread_mutex_unlock(&philo->right_fork);
-		return ;
+		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
+		return (0);
 	}
-	print_logs("%s%lld %d has taken the right fork\n", YELLOW, philo, current_time());
-	pthread_mutex_lock(philo->left_fork);
-	if (philo && dead_philos(philo))
+	if (pthread_mutex_lock(&controler()->forks[philo->lfork].fork) != 0)
 	{
-		pthread_mutex_unlock(&philo->right_fork);
-		pthread_mutex_unlock(philo->left_fork);	
-		return ;
+		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
+		return (0);
 	}
-	print_logs("%s%lld %d has taken the left fork\n", YELLOW, philo, current_time());
-	if (philo && dead_philos(philo))
+	if (!print_logs("%s%d %d has taken a fork\n", YELLOW, philo))
 	{
-		pthread_mutex_unlock(&philo->right_fork);
-		pthread_mutex_unlock(philo->left_fork);	
-		return ;
+		pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
+		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
+		return (0);
 	}
+	return (1);
 }
 
-void	philo_eat(t_philosopher *philo)
+int	philo_eat(t_philosophers *philo)
 {
-	print_logs("%s%lld %d is eating\n", GREEN, philo, current_time());
-	usleep(philo->data.t_eat);
-	philo->n_meals++;
-	philo->l_meal = current_time();
-	// printf("LAST MEAL: %lld\n", philo->l_meal - philo->t_start);
-	pthread_mutex_unlock(&philo->right_fork);
-	pthread_mutex_unlock(philo->left_fork);
+	if (!grab_forks(philo))
+		return (0);
+	if (!print_logs("%s%d %d is eating\n", GREEN, philo))
+	{
+		pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
+		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
+		return (0);
+	}
+	philo->last_meal = current_time();
+	if (died_while_eating(philo))
+		return (0);
+	philo->meals_ate++;
+	if (philo->meals_ate == controler()->max_meals)
+		controler()->all_philos_ate++;
+	pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
+	pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
+	return (1);
 }
 
-void	philo_sleep(t_philosopher *philo)
+int	philo_sleep(t_philosophers *philo)
 {
-	if (dead_philos(philo))
-		return ;
-	print_logs("%s%lld %d is sleeping\n", CYAN, philo, current_time());
-	usleep(philo->data.t_sleep);
+	int	time;
+
+	if (!print_logs("%s%d %d is sleeping\n", CYAN, philo))
+		return (0);
+	time = current_time();
+	while (current_time() < time + controler()->sleep_timer)
+	{
+		if (stop_dinner())
+			return (0);
+		usleep(100);
+	}
+	return (1);
 }
 
-void	*philo_death(t_philosopher *philo, long long time)
+int	kill_philo(t_philosophers *philo)
 {
-	// (void)time;
-	
-	pthread_mutex_unlock(&philo->right_fork);
-	pthread_mutex_unlock(philo->left_fork);
-	// if (dead_philos(philo))
-	// 	return (NULL);
-	pthread_mutex_lock(&philo->dead->dead_lock);
-	// printf("time passed: %lld\n", current_time() - philo->l_meal);
-	print_logs("%s%lld %d died\n", RED, philo, time);
-	philo->dead->dead = 1;
-	pthread_mutex_unlock(&philo->dead->dead_lock);
-	return (NULL);
+	pthread_mutex_lock(&controler()->waiter);
+	if (!controler()->stop_dinner)
+	{
+		controler()->stop_dinner = 1;
+		pthread_mutex_unlock(&controler()->waiter);
+		pthread_mutex_lock(&controler()->printer);
+		printf("%s%d %d died\n", RED,
+			current_time() - philo->start_time, philo->id);
+		pthread_mutex_unlock(&controler()->printer);
+	}
+	else
+		pthread_mutex_unlock(&controler()->waiter);
+	return (1);
+}
+
+int	stop_dinner(void)
+{
+	pthread_mutex_lock(&controler()->waiter);
+	if (controler()->stop_dinner)
+	{
+		pthread_mutex_unlock(&controler()->waiter);
+		return (1);
+	}
+	pthread_mutex_unlock(&controler()->waiter);
+	return (0);
 }
