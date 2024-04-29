@@ -6,11 +6,20 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 08:36:13 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/28 16:35:07 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/29 09:35:15 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/philosophers.h"
+
+int	error_msg(char *msg, int n)
+{
+	if (n != -1)
+		printf(msg, n);
+	else
+		printf("%s\n", msg);
+	return (1);
+}
 
 int	ft_atoi(const char *nptr)
 {
@@ -68,13 +77,6 @@ int	ft_isdigit_str(char *arg)
 		}
 	}
 	return (1);
-}
-
-t_data	*controler(void)
-{
-	static t_data	controler;
-
-	return (&controler);
 }
 
 int	current_time(void)

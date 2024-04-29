@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/20 10:51:27 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/28 16:35:30 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/29 10:02:11 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,15 +50,17 @@ int	died_while_eating(t_philosophers *philo)
 {
 	int	time;
 
+	(void)philo;
 	time = current_time();
 	while (current_time() < time + controler()->eat_timer)
 	{
-		if (stop_dinner())
-		{
-			pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
-			pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
-			return (1);
-		}
+		// if (stop_dinner())
+		// {
+		// 	pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
+		// 	pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
+		// 	return (1);
+		// }
+		usleep(100);
 	}
 	return (0);
 }
@@ -70,4 +72,11 @@ int	clean_memory(t_philosophers *philos)
 	if (controler()->forks)
 		free(controler()->forks);
 	return (1);
+}
+
+t_data	*controler(void)
+{
+	static t_data	controler;
+
+	return (&controler);
 }

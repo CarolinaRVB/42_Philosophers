@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/20 10:54:42 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/28 16:37:40 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/29 09:58:58 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,9 @@ int	philo_sleep(t_philosophers *philo)
 	time = current_time();
 	while (current_time() < time + controler()->sleep_timer)
 	{
-		if (stop_dinner())
-			return (0);
+		// if (stop_dinner())
+		// 	return (0);
+		usleep(100);
 	}
 	return (1);
 }
