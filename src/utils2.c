@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils2.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/20 10:51:27 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/29 10:02:11 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/29 17:20:22 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,16 +50,16 @@ int	died_while_eating(t_philosophers *philo)
 {
 	int	time;
 
-	(void)philo;
+	// (void)philo;
 	time = current_time();
-	while (current_time() < time + controler()->eat_timer)
+	while (current_time() < time + philo->eat_timer)
 	{
-		// if (stop_dinner())
-		// {
-		// 	pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
-		// 	pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
-		// 	return (1);
-		// }
+		if (stop_dinner())
+		{
+			pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
+			pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
+			return (1);
+		}
 		usleep(100);
 	}
 	return (0);

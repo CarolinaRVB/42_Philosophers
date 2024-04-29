@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philosophers.h                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:21:35 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/29 09:35:07 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/29 16:52:57 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,14 +40,11 @@ typedef struct s_forks
 
 typedef struct s_data
 {
-	int				max_philos;
-	int				eat_timer;
-	int				sleep_timer;
-	int				die_timer;
-	int				max_meals;
 	int				all_philos_ate;
+	int				max_philos;
 	int				stop_dinner;
 	t_fork			*forks;
+	// pthread_mutex_t	timer;
 	pthread_mutex_t	waiter;
 	pthread_mutex_t	printer;
 }	t_data;
@@ -55,12 +52,18 @@ typedef struct s_data
 typedef struct s_philosophers
 {
 	int				id;
-	int				start_time;
-	int				last_meal;
+	int				max_philos;
+	unsigned int	start_time;
+	unsigned int	eat_timer;
+	unsigned int	sleep_timer;
+	unsigned int	die_timer;
+	int				max_meals;
+	unsigned int	last_meal;
 	int				meals_ate;
 	int				rfork;
 	int				lfork;
 	pthread_t		philo_th;
+	// pthread_t		checker_th;
 }	t_philosophers;
 
 /*src/main.c*/
@@ -87,7 +90,7 @@ int				error_msg(char *msg, int n);
 int				ft_atoi(const char *nptr);
 void			*ft_calloc(size_t nmemb, size_t size);
 int				ft_isdigit_str(char *arg);
-int				current_time(void);
+unsigned int	current_time(void);
 
 /*src/utils2.c*/
 int				parsing(int argc, char **argv);

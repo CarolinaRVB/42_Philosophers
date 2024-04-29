@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   actions.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/20 10:54:42 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/29 09:58:58 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/29 17:27:39 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,18 @@
 
 int	grab_forks(t_philosophers *philo)
 {
-	pthread_mutex_lock(&controler()->forks[philo->rfork].fork);
+	if (pthread_mutex_lock(&controler()->forks[philo->rfork].fork) != 0)
+		return (0);
 	if (!print_logs("%s%d %d has taken a fork\n", YELLOW, philo))
 	{
 		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
 		return (0);
-	}	
-	pthread_mutex_lock(&controler()->forks[philo->lfork].fork);
+	}
+	if (pthread_mutex_lock(&controler()->forks[philo->lfork].fork) != 0)
+	{
+		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
+		return (0);
+	}
 	if (!print_logs("%s%d %d has taken a fork\n", YELLOW, philo))
 	{
 		pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
@@ -50,7 +55,7 @@ int	philo_eat(t_philosophers *philo)
 	if (died_while_eating(philo))
 		return (0);
 	philo->meals_ate++;
-	if (philo->meals_ate == controler()->max_meals)
+	if (philo->meals_ate == philo->max_meals)
 		controler()->all_philos_ate++;
 	pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
 	pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
@@ -64,10 +69,10 @@ int	philo_sleep(t_philosophers *philo)
 	if (!print_logs("%s%d %d is sleeping\n", CYAN, philo))
 		return (0);
 	time = current_time();
-	while (current_time() < time + controler()->sleep_timer)
+	while (current_time() < time + philo->sleep_timer)
 	{
-		// if (stop_dinner())
-		// 	return (0);
+		if (stop_dinner())
+			return (0);
 		usleep(100);
 	}
 	return (1);
@@ -75,8 +80,10 @@ int	philo_sleep(t_philosophers *philo)
 
 int	kill_philo(t_philosophers *philo)
 {
+	pthread_mutex_lock(&controler()->waiter);
 	if (!controler()->stop_dinner)
 	{
+		printf("here\n");
 		controler()->stop_dinner = 1;
 		pthread_mutex_unlock(&controler()->waiter);
 		pthread_mutex_lock(&controler()->printer);
