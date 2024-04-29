@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   actions.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/20 10:54:42 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/29 17:27:39 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/29 19:38:20 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ int	grab_forks(t_philosophers *philo)
 		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
 		return (0);
 	}	
-	if (cancel_dinner(philo))
+	if (stop_dinner())
 	{
 		pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
 		pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
@@ -83,7 +83,6 @@ int	kill_philo(t_philosophers *philo)
 	pthread_mutex_lock(&controler()->waiter);
 	if (!controler()->stop_dinner)
 	{
-		printf("here\n");
 		controler()->stop_dinner = 1;
 		pthread_mutex_unlock(&controler()->waiter);
 		pthread_mutex_lock(&controler()->printer);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:19:10 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/29 17:32:57 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/29 19:37:22 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@ int	cancel_dinner(t_philosophers *philo)
 		|| controler()->max_philos == 1)
 	{
 		pthread_mutex_unlock(&controler()->waiter);
-		
 		return (kill_philo(philo));
 	}
 	if (controler()->all_philos_ate == controler()->max_philos)
@@ -40,17 +39,14 @@ void *dead_philo(void *arg)
 	t_philosophers *philo;
 
 	i = 0;
-	philo = (t_philosophers *)arg;	
+	philo = (t_philosophers *)arg;
 	while (1)
 	{
+		i = 0;
 		while (i < philo->max_philos)
 		{
-			printf("HERE 1\n");
 			if (cancel_dinner(&(philo[i])))
-			{
-				printf("HERE\n");
 				return (NULL);
-			}
 			i++;
 		}
 	}
@@ -82,7 +78,7 @@ int	create_threads(t_philosophers *philos)
 	pthread_t	th;
 
 	i = 0;
-	if (pthread_create(&th , NULL, dead_philo, &philos) != 0)
+	if (pthread_create(&th , NULL, dead_philo, philos) != 0)
 			return (printf("Error: issue with pthread create.\n"));
 	while (i < controler()->max_philos)
 	{
