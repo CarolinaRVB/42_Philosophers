@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philosophers.h                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:21:35 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/29 16:52:57 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/29 22:46:36 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,14 +25,6 @@
 # define CYAN "\x1b[36m"
 # define GREY "\x1b[90m"
 
-//##############   MUTEX EXPLANATION  #######################################
-
-/*So, even though each philosopher has its own data and resources, 
-they all share the same standard output, and therefore, a mutex is used 
-to synchronize access to it to avoid issues related to concurrent access.*/
-
-//##########################################################################
-
 typedef struct s_forks
 {
 	pthread_mutex_t	fork;
@@ -43,8 +35,11 @@ typedef struct s_data
 	int				all_philos_ate;
 	int				max_philos;
 	int				stop_dinner;
+	int				max_meals;
+	unsigned int	eat_timer;
+	unsigned int	sleep_timer;
+	unsigned int	die_timer;
 	t_fork			*forks;
-	// pthread_mutex_t	timer;
 	pthread_mutex_t	waiter;
 	pthread_mutex_t	printer;
 }	t_data;
@@ -52,25 +47,19 @@ typedef struct s_data
 typedef struct s_philosophers
 {
 	int				id;
-	int				max_philos;
-	unsigned int	start_time;
-	unsigned int	eat_timer;
-	unsigned int	sleep_timer;
-	unsigned int	die_timer;
-	int				max_meals;
-	unsigned int	last_meal;
 	int				meals_ate;
 	int				rfork;
 	int				lfork;
+	unsigned int	start_time;
+	unsigned int	last_meal;
 	pthread_t		philo_th;
-	// pthread_t		checker_th;
 }	t_philosophers;
 
 /*src/main.c*/
 int				cancel_dinner(t_philosophers *philo);
+void			*dead_philo(void *arg);
 void			*routine(void *arg);
 int				create_threads(t_philosophers *philos);
-void			destroy_mutexes(t_philosophers *philos);
 int				main(int argc, char **argv);
 
 /*src/actions.c*/
@@ -84,6 +73,7 @@ int				stop_dinner(void);
 int				init_controler(char **argv);
 void			init_forks(t_fork *fork);
 int				init_philos(t_philosophers *philo, char **argv);
+void			destroy_mutexes(t_philosophers *philos);
 
 /*src/utils1.c*/
 int				error_msg(char *msg, int n);

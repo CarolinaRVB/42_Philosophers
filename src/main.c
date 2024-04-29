@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:19:10 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/29 19:37:22 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/29 22:44:46 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,7 @@
 int	cancel_dinner(t_philosophers *philo)
 {
 	pthread_mutex_lock(&controler()->waiter);
-	if ((current_time() - philo->last_meal >= philo->die_timer)
-		|| (philo->meals_ate <= 0 && ((current_time() - philo->start_time
-					>= philo->die_timer)))
+	if ((current_time() - philo->last_meal >= controler()->die_timer)
 		|| controler()->max_philos == 1)
 	{
 		pthread_mutex_unlock(&controler()->waiter);
@@ -33,17 +31,17 @@ int	cancel_dinner(t_philosophers *philo)
 	return (0);
 }
 
-void *dead_philo(void *arg)
+void	*dead_philo(void *arg)
 {
-	int	i;
-	t_philosophers *philo;
+	t_philosophers	*philo;
+	int				i;
 
 	i = 0;
 	philo = (t_philosophers *)arg;
 	while (1)
 	{
 		i = 0;
-		while (i < philo->max_philos)
+		while (i < controler()->max_philos)
 		{
 			if (cancel_dinner(&(philo[i])))
 				return (NULL);
@@ -59,7 +57,7 @@ void	*routine(void *arg)
 
 	philo = (t_philosophers *)arg;
 	if (philo->id % 2 != 0)
-		usleep(1000);
+		usleep(10000);
 	while (!stop_dinner())
 	{
 		if (!philo_eat(philo))
@@ -74,12 +72,12 @@ void	*routine(void *arg)
 
 int	create_threads(t_philosophers *philos)
 {
-	int	i;
+	int			i;
 	pthread_t	th;
 
 	i = 0;
-	if (pthread_create(&th , NULL, dead_philo, philos) != 0)
-			return (printf("Error: issue with pthread create.\n"));
+	if (pthread_create(&th, NULL, dead_philo, philos) != 0)
+		return (printf("Error: issue with pthread create.\n"));
 	while (i < controler()->max_philos)
 	{
 		if (pthread_create(&philos[i].philo_th, NULL, routine, &philos[i]) != 0)
@@ -87,7 +85,7 @@ int	create_threads(t_philosophers *philos)
 		i++;
 	}
 	if (pthread_join(th, NULL) != 0)
-			return (printf("Error: issue with pthread join.\n"));
+		return (printf("Error: issue with pthread join.\n"));
 	i = 0;
 	while (i < controler()->max_philos)
 	{
@@ -96,22 +94,6 @@ int	create_threads(t_philosophers *philos)
 		i++;
 	}
 	return (0);
-}
-
-void	destroy_mutexes(t_philosophers *philos)
-{
-	int	i;
-
-	i = 0;
-	pthread_mutex_destroy(&controler()->printer);
-	pthread_mutex_destroy(&controler()->waiter);
-	while (i < controler()->max_philos)
-	{
-		pthread_mutex_destroy(&controler()->forks[i].fork);
-		i++;
-	}
-	free(controler()->forks);
-	free(philos);
 }
 
 int	main(int argc, char **argv)

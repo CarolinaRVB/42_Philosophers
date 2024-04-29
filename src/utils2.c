@@ -6,7 +6,7 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/20 10:51:27 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/29 19:36:00 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/29 21:58:25 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ int	died_while_eating(t_philosophers *philo)
 	int	time;
 
 	time = current_time();
-	while (current_time() < time + philo->eat_timer)
+	while (current_time() < time + controler()->eat_timer)
 	{
 		if (stop_dinner())
 		{
