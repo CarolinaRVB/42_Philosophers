@@ -10,7 +10,7 @@ OBJ := $(SRC:.c=.o)
 
 CC := cc
 
-CFLAGS := -Wall -Wextra -Werror -g #-pthread -fsanitize=thread
+CFLAGS := -Wall -Wextra -Werror -g # -pthread -fsanitize=thread
 
 INCLUDES := -I.libft/includes
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils2.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/20 10:51:27 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/29 21:58:25 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/04/30 17:38:47 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ int	died_while_eating(t_philosophers *philo)
 {
 	int	time;
 
+	(void)philo;
 	time = current_time();
 	while (current_time() < time + controler()->eat_timer)
 	{
