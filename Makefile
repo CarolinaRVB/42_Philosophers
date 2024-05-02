@@ -1,3 +1,15 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2024/05/01 10:14:15 by crebelo-          #+#    #+#              #
+#    Updated: 2024/05/01 17:46:38 by crebelo-         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 NAME := philo
 
 SRC :=	src/actions.c \
@@ -10,7 +22,7 @@ OBJ := $(SRC:.c=.o)
 
 CC := cc
 
-CFLAGS := -Wall -Wextra -Werror -g # -pthread -fsanitize=thread
+CFLAGS := -Wall -Wextra -Werror -pthread #-g   -fsanitize=thread
 
 INCLUDES := -I.libft/includes
 

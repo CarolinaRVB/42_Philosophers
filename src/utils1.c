@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   utils1.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 08:36:13 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/29 16:53:32 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/05/01 19:30:52 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/philosophers.h"
+#include "../includes/philo.h"
 
 int	error_msg(char *msg, int n)
 {
@@ -21,7 +21,7 @@ int	error_msg(char *msg, int n)
 	return (1);
 }
 
-int	ft_atoi(const char *nptr)
+unsigned int	ft_atoi(const char *nptr)
 {
 	int	i;
 	int	res;

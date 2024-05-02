@@ -6,11 +6,11 @@
 /*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:21:35 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/29 22:42:51 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/05/01 19:57:28 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/philosophers.h"
+#include "../includes/philo.h"
 
 int	init_controler(char **argv)
 {
@@ -29,23 +29,30 @@ int	init_controler(char **argv)
 	fork = malloc(controler()->max_philos * sizeof(t_fork));
 	if (!fork)
 		return (0);
-	init_forks(fork);
+	if (!init_forks(fork))
+		return (0);
 	controler()->forks = fork;
-	pthread_mutex_init(&controler()->waiter, NULL);
-	pthread_mutex_init(&controler()->printer, NULL);
+	if (pthread_mutex_init(&controler()->waiter, NULL) != 0
+		|| pthread_mutex_init(&controler()->printer, NULL) != 0
+		|| pthread_mutex_init(&controler()->timer, NULL) != 0
+		|| pthread_mutex_init(&controler()->meals_lock, NULL) != 0)
+		return (0);
+	controler()->start_time = 0;
 	return (1);
 }
 
-void	init_forks(t_fork *fork)
+int	init_forks(t_fork *fork)
 {
 	int	i;
 
 	i = 0;
 	while (i < controler()->max_philos)
 	{
-		pthread_mutex_init(&fork[i].fork, NULL);
+		if (pthread_mutex_init(&fork[i].fork, NULL) != 0)
+			return (0);
 		i++;
 	}
+	return (1);
 }
 
 int	init_philos(t_philosophers *philo, char **argv)
@@ -58,10 +65,10 @@ int	init_philos(t_philosophers *philo, char **argv)
 	while (i < controler()->max_philos)
 	{
 		philo[i].id = i + 1;
-		philo[i].start_time = current_time();
 		philo[i].last_meal = current_time();
 		philo[i].meals_ate = 0;
 		philo[i].rfork = i;
+		philo[i].on = false;
 		if (philo[i].id == controler()->max_philos)
 		{
 			philo[i].lfork = i;
@@ -81,6 +88,8 @@ void	destroy_mutexes(t_philosophers *philos)
 	i = 0;
 	pthread_mutex_destroy(&controler()->printer);
 	pthread_mutex_destroy(&controler()->waiter);
+	pthread_mutex_destroy(&controler()->timer);
+	pthread_mutex_destroy(&controler()->meals_lock);
 	while (i < controler()->max_philos)
 	{
 		pthread_mutex_destroy(&controler()->forks[i].fork);

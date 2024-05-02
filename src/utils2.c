@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   utils2.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/20 10:51:27 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/04/30 17:38:47 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/05/02 08:29:50 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/philosophers.h"
+#include "../includes/philo.h"
 
 int	parsing(int argc, char **argv)
 {
@@ -35,34 +35,48 @@ int	parsing(int argc, char **argv)
 
 int	print_logs(char *str, char *color, t_philosophers *philo)
 {
-	pthread_mutex_lock(&controler()->printer);
 	if (stop_dinner())
-	{
-		pthread_mutex_unlock(&controler()->printer);
 		return (0);
-	}
-	printf(str, color, current_time() - philo->start_time, philo->id);
+	pthread_mutex_lock(&controler()->timer);
+	pthread_mutex_lock(&controler()->printer);
+	// if (controler()->start_time == 0)
+	// 	controler()->start_time = current_time();
+	printf(str, color, current_time() - controler()->start_time, philo->id);
 	pthread_mutex_unlock(&controler()->printer);
+	pthread_mutex_unlock(&controler()->timer);
 	return (1);
 }
 
-int	died_while_eating(t_philosophers *philo)
+int	eating(t_philosophers *philo)
 {
-	int	time;
+    struct timeval tv;
+    unsigned int start_time, current_time;
 
-	(void)philo;
-	time = current_time();
-	while (current_time() < time + controler()->eat_timer)
-	{
-		if (stop_dinner())
-		{
-			pthread_mutex_unlock(&controler()->forks[philo->lfork].fork);
-			pthread_mutex_unlock(&controler()->forks[philo->rfork].fork);
-			return (1);
-		}
-		usleep(100);
-	}
-	return (0);
+    // // if (!print_logs("%s%d %d is eating\n", GREEN, philo))
+    // //     return 0;
+
+    if (gettimeofday(&tv, NULL))
+        return 0;
+
+    start_time = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+
+    while (1) {
+        if (gettimeofday(&tv, NULL))
+            return 0;
+
+        current_time = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+
+        if (current_time >= start_time + controler()->eat_timer)
+            break;
+
+        usleep(100);
+    }
+	philo->meals_ate++;
+	pthread_mutex_lock(&controler()->meals_lock);
+	if (philo->meals_ate == controler()->max_meals)
+		controler()->all_philos_ate++;
+	pthread_mutex_unlock(&controler()->meals_lock);
+	return (1);
 }
 
 int	clean_memory(t_philosophers *philos)
