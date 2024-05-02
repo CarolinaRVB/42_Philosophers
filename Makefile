@@ -3,28 +3,27 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+         #
+#    By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/05/01 10:14:15 by crebelo-          #+#    #+#              #
-#    Updated: 2024/05/01 17:46:38 by crebelo-         ###   ########.fr        #
+#    Created: 2024/03/24 22:19:10 by crebelo-          #+#    #+#              #
+#    Updated: 2024/05/02 20:31:39 by crebelo-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME := philo
 
-SRC :=	src/actions.c \
-		src/init_dinner.c \
-		src/utils1.c \
-		src/utils2.c \
-		src/main.c
+SRC :=	actions.c \
+		init_dinner.c \
+		utils1.c \
+		utils2.c \
+		utils3.c \
+		main.c
 
 OBJ := $(SRC:.c=.o)
 
 CC := cc
 
-CFLAGS := -Wall -Wextra -Werror -pthread #-g   -fsanitize=thread
-
-INCLUDES := -I.libft/includes
+CFLAGS := -Wall -Wextra -Werror -pthread # -g -fsanitize=thread
 
 GREEN := \033[0;32m
 CYAN := \033[0;36m

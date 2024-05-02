@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   utils1.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/22 08:36:13 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/05/01 19:30:52 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/05/02 17:29:29 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/philo.h"
+#include "philo.h"
 
 int	error_msg(char *msg, int n)
 {
@@ -23,9 +23,9 @@ int	error_msg(char *msg, int n)
 
 unsigned int	ft_atoi(const char *nptr)
 {
-	int	i;
-	int	res;
-	int	sign;
+	int				i;
+	unsigned int	res;
+	int				sign;
 
 	i = 0;
 	res = 0;
@@ -77,13 +77,4 @@ int	ft_isdigit_str(char *arg)
 		}
 	}
 	return (1);
-}
-
-unsigned int	current_time(void)
-{
-	struct timeval	tv;
-
-	if (gettimeofday(&tv, NULL))
-		return (0);
-	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
 }

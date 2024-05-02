@@ -3,56 +3,59 @@
 /*                                                        :::      ::::::::   */
 /*   init_dinner.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: crebelo- <crebelo-@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: crebelo- <crebelo-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/24 22:21:35 by crebelo-          #+#    #+#             */
-/*   Updated: 2024/05/01 19:57:28 by crebelo-         ###   ########.fr       */
+/*   Updated: 2024/05/02 17:52:30 by crebelo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/philo.h"
+#include "philo.h"
 
 int	init_controler(char **argv)
 {
-	t_fork		*fork;
-
 	controler()->max_philos = ft_atoi(argv[1]);
 	controler()->die_timer = ft_atoi(argv[2]);
-	controler()->eat_timer = ft_atoi(argv[3]);
-	controler()->sleep_timer = ft_atoi(argv[4]);
-	if (argv[5])
-		controler()->max_meals = ft_atoi(argv[5]);
-	else
-		controler()->max_meals = -1;
 	controler()->all_philos_ate = 0;
 	controler()->stop_dinner = 0;
-	fork = malloc(controler()->max_philos * sizeof(t_fork));
-	if (!fork)
+	controler()->forks = malloc(controler()->max_philos * sizeof(t_fork));
+	if (!controler()->forks)
 		return (0);
-	if (!init_forks(fork))
+	init_forks(controler()->forks);
+	if (pthread_mutex_init(&controler()->waiter, NULL)
+		|| pthread_mutex_init(&controler()->printer, NULL)
+		|| pthread_mutex_init(&controler()->time, NULL)
+		|| pthread_mutex_init(&controler()->meals, NULL)
+		|| pthread_mutex_init(&controler()->philo_on, NULL))
 		return (0);
-	controler()->forks = fork;
-	if (pthread_mutex_init(&controler()->waiter, NULL) != 0
-		|| pthread_mutex_init(&controler()->printer, NULL) != 0
-		|| pthread_mutex_init(&controler()->timer, NULL) != 0
-		|| pthread_mutex_init(&controler()->meals_lock, NULL) != 0)
-		return (0);
-	controler()->start_time = 0;
 	return (1);
 }
 
-int	init_forks(t_fork *fork)
+void	init_forks(t_fork *fork)
 {
 	int	i;
 
 	i = 0;
 	while (i < controler()->max_philos)
 	{
-		if (pthread_mutex_init(&fork[i].fork, NULL) != 0)
-			return (0);
+		pthread_mutex_init(&fork[i].fork, NULL);
 		i++;
 	}
-	return (1);
+}
+
+void	set_philo_meal_fork(t_philosophers *philo, char **argv, int i)
+{
+	if (argv[5])
+		philo[i].max_meals = ft_atoi(argv[5]);
+	else
+		philo[i].max_meals = -1;
+	if (philo[i].id == philo[i].max_philos)
+	{
+		philo[i].lfork = i;
+		philo[i].rfork = 0;
+	}
+	else
+		philo[i].lfork = i + 1;
 }
 
 int	init_philos(t_philosophers *philo, char **argv)
@@ -65,17 +68,15 @@ int	init_philos(t_philosophers *philo, char **argv)
 	while (i < controler()->max_philos)
 	{
 		philo[i].id = i + 1;
-		philo[i].last_meal = current_time();
+		philo[i].eat_timer = ft_atoi(argv[3]);
+		philo[i].sleep_timer = ft_atoi(argv[4]);
+		philo[i].max_philos = ft_atoi(argv[1]);
 		philo[i].meals_ate = 0;
 		philo[i].rfork = i;
 		philo[i].on = false;
-		if (philo[i].id == controler()->max_philos)
-		{
-			philo[i].lfork = i;
-			philo[i].rfork = 0;
-		}
-		else
-			philo[i].lfork = i + 1;
+		set_philo_meal_fork(philo, argv, i);
+		philo[i].start_time = current_time();
+		philo[i].last_meal = current_time();
 		i++;
 	}
 	return (1);
@@ -88,8 +89,9 @@ void	destroy_mutexes(t_philosophers *philos)
 	i = 0;
 	pthread_mutex_destroy(&controler()->printer);
 	pthread_mutex_destroy(&controler()->waiter);
-	pthread_mutex_destroy(&controler()->timer);
-	pthread_mutex_destroy(&controler()->meals_lock);
+	pthread_mutex_destroy(&controler()->time);
+	pthread_mutex_destroy(&controler()->meals);
+	pthread_mutex_destroy(&controler()->philo_on);
 	while (i < controler()->max_philos)
 	{
 		pthread_mutex_destroy(&controler()->forks[i].fork);
